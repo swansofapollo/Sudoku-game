@@ -1,18 +1,22 @@
 import pygame
 
-NUMS = {'0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'a':10,'b':11,'c':12,'d':13,'e':14,'f':15}
-NOT_NUMS = {0:'0',1:'1',2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'a',11:'b',12:'c',13:'d',14:'e',15:'f'}
+NUMS = {'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, 'a': 10, 'b': 11, 'c': 12,
+        'd': 13, 'e': 14, 'f': 15}
+NOT_NUMS = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: 'a', 11: 'b', 12: 'c',
+            13: 'd', 14: 'e', 15: 'f'}
+
+
 class Board:
     def __init__(self, width, height):
         self.width = width
         self.height = height
         self.table = [[''] * self.width for _ in range(self.height)]
-        self.coord = (0,0)
+        self.coord = (0, 0)
         self.cell_size = 40
         self.left = 10
         self.top = 10
-        self.notes = [[[False]*16] * self.width for _ in range(self.height)]
-        self.diapason = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']
+        self.notes = [[[False] * 16] * self.width for _ in range(self.height)]
+        self.diapason = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
         self.edit_notes = False
 
     def set_view(self, cell_size, left, top):
@@ -36,33 +40,31 @@ class Board:
         for i in range(self.height):
             for j in range(self.width):
                 pygame.draw.rect(screen, pygame.Color('white'), (
-                    self.left + self.cell_size * j , self.top + self.cell_size * i , self.cell_size ,
+                    self.left + self.cell_size * j, self.top + self.cell_size * i, self.cell_size,
                     self.cell_size),
                                  1)
         font = pygame.font.Font(None, 55)
-        pygame.draw.rect(screen, pygame.Color('white'), (self.left + self.cell_size * self.coord[0], self.top + self.cell_size * self.coord[1], self.cell_size, self.cell_size),
-                        0 )
+        pygame.draw.rect(screen, pygame.Color('white'), (
+            self.left + self.cell_size * self.coord[0], self.top + self.cell_size * self.coord[1], self.cell_size,
+            self.cell_size),
+                         0)
 
         for i in range(self.height):
             for j in range(self.width):
                 text = font.render(self.table[j][i], True, (0, 0, 0))
-                text_x =  self.left+ self.cell_size * j+10
-                text_y = self.top + self.cell_size * i+3
+                text_x = self.left + self.cell_size * j + 10
+                text_y = self.top + self.cell_size * i + 3
                 screen.blit(text, (text_x, text_y))
         font_1 = pygame.font.Font(None, 20)
-
 
         for i in range(self.height):
             for j in range(self.width):
                 for z in range(16):
-                    if self.notes[j][i][z] == True:
+                    if self.notes[j][i][z] == True and self.table[j][i] == '':
                         text = font_1.render(NOT_NUMS[z], True, (0, 0, 0))
-                        text_x =  self.left+ self.cell_size * j + z//4 * 3
-                        text_y = self.top + self.cell_size * i + z//4 *3
-                        screen.blit(text, (text_x, text_y))
-
-
-
+                        note_x = self.left + self.cell_size * j + 10
+                        note_y = self.top + self.cell_size * i + 3
+                        screen.blit(text, (note_x, note_y))
 
     def get_cell(self, mous_coord):
         x, y = mous_coord
@@ -85,13 +87,12 @@ class Board:
             else:
                 self.table[self.coord[0]][self.coord[1]] = chr(key).upper() if chr(key).isalpha() else chr(key)
 
-
-
     def get_click(self, mouse_pos):
         cell_coords = self.get_cell(mouse_pos)
         if cell_coords is None:
             return
         self.on_click(cell_coords)
+
 
 if __name__ == '__main__':
     pygame.init()
@@ -115,5 +116,3 @@ if __name__ == '__main__':
 
         pygame.display.flip()
     pygame.quit()
-
-
