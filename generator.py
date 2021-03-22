@@ -1,70 +1,82 @@
 import random
+from copy import deepcopy
 
-
-class Grid:
-    def __init__(self, n=4):
-        """Generation of the base table"""
+class Generator:
+    """
+        class Generator
+        Generates a sudoku field: result contains the result list, field contains the solution to the sudoku
+        Init:
+            Sets field size and difficulty (difficulty number shows how many numbers will be removed from the solution)
+        Usage:
+            generate_field() - generates a field and returns a solvable sudoku
+            get_solution() - returns the sudoku's solution
+    """
+    def __init__(self, n=4, difficulty=50):
         self.n = n
-        self.table = [[((i * n + i // n + j) % (n * n)) for j in range(n * n)] for i in range(n * n)]
+        self.field = [[((i * n + i // n + j) % (n * n)) for j in range(n * n)] for i in range(n * n)]
+        self.result = []
+        self.difficulty = difficulty
 
-    def __del__(self):
-        pass
+    def transpose(self):
+        self.field = list(map(list, zip(*self.field)))
 
-    def show(self):
-        for i in range(self.n * self.n):
-            print(self.table[i])
+    def swap_columns(self, col_1, col_2):
+        for i in range(len(self.field)):
+            self.field[i][col_1], self.field[i][col_2] = self.field[i][col_2], self.field[i][col_1]
 
-    def transposing(self):
-        """ Transposing the whole grid """
-        self.table = map(list, zip(*self.table))
+    def swap_rows(self, row_1, row_2):
+        self.field[row_1], self.field[row_2] = self.field[row_2], self.field[row_1]
+    
+    def swap_vertical_area(self, col_1, col_2):
+        for k in range(len(self.field)):
+            for i in range(self.n):
+                  self.field[k][(col_1 * self.n) + i], self.field[k][(col_2 * self.n) + i] = self.field[k][(col_2 * self.n) + i], self.field[k][(col_1 * self.n) + i]
 
-    def swap_rows_small(self):
-        """ Swap the two rows """
-        area = random.randrange(0, self.n, 1)
-        line1 = random.randrange(0, self.n, 1)
-        # получение случайного района и случайной строки
-        N1 = area * self.n + line1
-        # номер 1 строки для обмена
+    def swap_horizontal_area(self, row_1, row_2):
+        for i in range(self.n):
+            self.field[(row_1 * self.n) + i], self.field[(row_2 * self.n) + i] = self.field[(row_2 * self.n) + i], self.field[(row_1 * self.n) + i]
 
-        line2 = random.randrange(0, self.n, 1)
-        while (line1 == line2):
-            line2 = random.randrange(0, self.n, 1)
+    def generate_field(self):
+        iterations = random.randint(1000, 1100)
+        for i in range(iterations):
+            operation = random.randint(0, 4)
+            if operation == 0: 
+                self.transpose()
+            elif operation == 1:
+                cell = random.randint(0, self.n - 1)
+                first = random.randint(0, self.n - 1)
+                second = random.randint(0, self.n - 1)
+                self.swap_columns(cell * self.n + first, cell * self.n + second)
+            elif operation == 2:
+                cell = random.randint(0, self.n - 1)
+                first = random.randint(0, self.n - 1)
+                second = random.randint(0, self.n - 1)
+                self.swap_rows(cell * self.n + first, cell * self.n + second)
+            elif operation == 3:
+                first = random.randint(0, self.n - 1)
+                second = random.randint(0, self.n - 1)
+                self.swap_horizontal_area(first, second)
+            elif operation == 4:
+                first = random.randint(0, self.n - 1)
+                second = random.randint(0, self.n - 1)
+                self.swap_vertical_area(first, second)
+        
+        self.result = deepcopy(self.field)
+        for i in range(self.difficulty):
+            x = random.randint(0, self.n * self.n - 1)
+            y = random.randint(0, self.n * self.n - 1)
+            self.result[x][y] = -1
+        return self.result
 
-        N2 = area * self.n + line2
-        # номер 2 строки для обмена
-
-        self.table[N1], self.table[N2] = self.table[N2], self.table[N1]
-
-    def swap_colums_small(self):
-        self.transposing()
-        self.swap_rows_small()
-        self.transposing()
-
-
-    def swap_rows_area(self):
-        """ Swap the two area horizon """
-        area1 = random.randrange(0, self.n, 1)
-        # получение случайного района
-
-        area2 = random.randrange(0, self.n, 1)
-        while (area1 == area2):
-            area2 = random.randrange(0, self.n, 1)
-
-        for i in range(0, self.n):
-            N1, N2 = area1 * self.n + i, area2 * self.n + i
-            self.table[N1], self.table[N2] = self.table[N2], self.table[N1]
-
-    def mix(self, amt=10):
-        mix_func = ['self.transposing()',
-                    'self.swap_rows_small()',
-                    'self.swap_colums_small()',
-                    'self.swap_rows_area()']
-        for i in range(1, amt):
-            id_func = random.randrange(0, len(mix_func), 1)
-            eval(mix_func[id_func])
+    def get_solution(self):
+        return self.field
 
 
-
-a = Grid()
-a.mix()
-a.show()
+# Example
+# inits a generator with 16x16 field, 60 cells removed
+generator = Generator(n=4, difficulty=60)
+# generates a field and returns a generated field
+field = generator.generate_field()
+# prints a generated field, then prints a solution to that field
+print(*field, sep="\n", end="\n\n")
+print(*generator.get_solution(), sep="\n")
